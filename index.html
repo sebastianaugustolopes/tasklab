@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskLab | Gerenciador de Tarefas</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TaskLab</h1>
+            <p id="contador-tarefas"></p>
+        </header>
+
+        <form id="formulario-tarefa">
+            <div class="campo">
+                <label for="campo-titulo">Título</label>
+                <input type="text" id="campo-titulo" name="titulo" required>
+            </div>
+
+            <div class="campo">
+                <label for="campo-descricao">Descrição</label>
+                <textarea id="campo-descricao" name="descricao" rows="3"></textarea>
+            </div>
+
+            <div class="linha">
+                <div class="campo">
+                    <label for="campo-prioridade">Prioridade</label>
+                    <select id="campo-prioridade" name="prioridade">
+                        <option value="Baixa">Baixa</option>
+                        <option value="Média" selected>Média</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="campo-data">Data de entrega</label>
+                    <input type="date" id="campo-data" name="data">
+                </div>
+            </div>
+
+            <div class="acoes-formulario">
+                <button type="submit" id="botao-salvar">Salvar tarefa</button>
+                <button type="button" id="botao-cancelar">Cancelar</button>
+            </div>
+        </form>
+
+        <main>
+            <ul id="lista-tarefas"></ul>
+            <p id="mensagem-vazia" hidden>Nenhuma tarefa cadastrada.</p>
+        </main>
+    </div>
+
+    <script src="assets/js/app.js" defer></script>
+</body>
+</html>
