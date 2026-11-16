@@ -132,6 +132,22 @@ function renderizarTarefas() {
     atualizarContador();
 }
 
+// Ponto único de sincronização entre estado, storage e tela.
+//
+// Toda vez que o array `tarefas` muda (criar, editar, excluir, concluir,
+// reabrir, apagar todas...), é ESTA função que deve ser chamada — nunca
+// salvarTarefas() ou renderizarTarefas() isoladamente. Isso garante que
+// o que está salvo no localStorage e o que está na tela nunca fiquem
+// fora de sincronia um do outro.
+//
+// Importante: `idEmEdicao` é estado temporário da interface (controla
+// apenas o modo do formulário) e não é tocado aqui — só `tarefas` é
+// persistido, pois é o único dado que faz sentido existir entre visitas.
+function atualizarAplicacao() {
+    salvarTarefas();
+    renderizarTarefas();
+}
+
 // Devolve uma cópia da tarefa com os campos editáveis atualizados,
 // preservando id e status de conclusão originais.
 function atualizarTarefa(tarefa, { titulo, descricao, prioridade, data }) {
@@ -177,7 +193,7 @@ elementoFormulario.addEventListener("submit", (evento) => {
         );
     }
 
-    renderizarTarefas();
+    atualizarAplicacao();
     sairDoModoEdicao();
 });
 
@@ -190,7 +206,7 @@ function alternarConclusao(id) {
     tarefas = tarefas.map((tarefa) =>
         tarefa.id === id ? { ...tarefa, concluida: !tarefa.concluida } : tarefa
     );
-    renderizarTarefas();
+    atualizarAplicacao();
 }
 
 // Remove uma tarefa do array pelo id. Se a tarefa excluída era a que estava
@@ -198,7 +214,7 @@ function alternarConclusao(id) {
 function excluirTarefa(id) {
     tarefas = tarefas.filter((tarefa) => tarefa.id !== id);
     if (idEmEdicao === id) sairDoModoEdicao();
-    renderizarTarefas();
+    atualizarAplicacao();
 }
 
 // Delegação de eventos: um único listener no container cuida de todos os
