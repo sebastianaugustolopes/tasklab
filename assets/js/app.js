@@ -1,6 +1,53 @@
 console.log("TaskLab iniciado.");
 
-let tarefas = [];
+// Chave usada para guardar as tarefas no localStorage. Mantê-la em uma
+// constante evita erros de digitação e facilita trocar o nome depois.
+const CHAVE_ARMAZENAMENTO = "tasklab:tarefas";
+
+// Lê as tarefas salvas no localStorage e devolve um array pronto para uso.
+//
+// Cuidados importantes:
+// 1. localStorage só guarda strings, então o que está salvo ali é um JSON.
+//    JSON.parse pode lançar uma exceção se o conteúdo estiver corrompido
+//    (por exemplo, se alguém editar o valor manualmente no DevTools). Por
+//    isso o try/catch: se der erro, tratamos como "não há dados válidos"
+//    e voltamos para uma lista vazia, em vez de quebrar a aplicação toda.
+// 2. Também validamos que o resultado é de fato um array (Array.isArray).
+//    Sem essa checagem, um JSON válido mas com formato errado (por
+//    exemplo um objeto único, ou o número 42) passaria pelo JSON.parse
+//    sem lançar erro, e quebraria o restante do código, que espera
+//    sempre um array de tarefas.
+function carregarTarefas() {
+    try {
+        const dadosSalvos = localStorage.getItem(CHAVE_ARMAZENAMENTO);
+
+        // Chave ainda não existe no localStorage (ex.: primeira visita).
+        if (dadosSalvos === null) return [];
+
+        const tarefasCarregadas = JSON.parse(dadosSalvos);
+
+        if (!Array.isArray(tarefasCarregadas)) {
+            console.warn("Dados de tarefas corrompidos (formato inesperado). Iniciando lista vazia.");
+            return [];
+        }
+
+        return tarefasCarregadas;
+    } catch (erro) {
+        // JSON.parse falhou: o conteúdo salvo não é um JSON válido.
+        console.warn("Não foi possível carregar as tarefas salvas. Iniciando lista vazia.", erro);
+        return [];
+    }
+}
+
+// Serializa o array de tarefas atual em JSON e grava no localStorage.
+// Lê a variável `tarefas` diretamente (está no mesmo escopo do arquivo).
+function salvarTarefas() {
+    localStorage.setItem(CHAVE_ARMAZENAMENTO, JSON.stringify(tarefas));
+}
+
+// Estado principal da aplicação: em vez de sempre começar vazio, começa
+// com o que já estiver salvo no localStorage de visitas anteriores.
+let tarefas = carregarTarefas();
 
 // Seleção dos elementos (uma única vez, no topo do arquivo)
 const elementoFormulario = document.querySelector("#formulario-tarefa");
@@ -178,4 +225,6 @@ elementoLista.addEventListener("click", (evento) => {
     }
 });
 
-renderizarTarefas(); // primeira renderização (lista vazia no início)
+// Primeira renderização: desenha o que foi carregado do localStorage
+// (pode já vir com tarefas de uma visita anterior, ou vazio na primeira vez).
+renderizarTarefas();
