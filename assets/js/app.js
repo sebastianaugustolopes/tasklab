@@ -4,6 +4,20 @@ console.log("TaskLab iniciado.");
 // constante evita erros de digitação e facilita trocar o nome depois.
 const CHAVE_ARMAZENAMENTO = "tasklab:tarefas";
 
+// Confere se um valor tem o formato mínimo esperado de uma tarefa.
+// Usada ao carregar dados do localStorage, onde não podemos confiar que
+// o conteúdo salvo (possivelmente editado manualmente, ou salvo por uma
+// versão antiga do app) tem exatamente os campos que o app usa hoje.
+function ehTarefaValida(valor) {
+    return (
+        typeof valor === "object" &&
+        valor !== null &&
+        typeof valor.id === "string" &&
+        typeof valor.titulo === "string" &&
+        typeof valor.concluida === "boolean"
+    );
+}
+
 // Lê as tarefas salvas no localStorage e devolve um array pronto para uso.
 //
 // Cuidados importantes:
@@ -17,6 +31,10 @@ const CHAVE_ARMAZENAMENTO = "tasklab:tarefas";
 //    exemplo um objeto único, ou o número 42) passaria pelo JSON.parse
 //    sem lançar erro, e quebraria o restante do código, que espera
 //    sempre um array de tarefas.
+// 3. Além do array em si, cada ITEM do array também é validado com
+//    ehTarefaValida. Assim, se uma única tarefa estiver corrompida (por
+//    exemplo, sem o campo "titulo"), só ela é descartada — as demais
+//    tarefas, que estão íntegras, continuam aparecendo normalmente.
 function carregarTarefas() {
     try {
         const dadosSalvos = localStorage.getItem(CHAVE_ARMAZENAMENTO);
@@ -31,7 +49,12 @@ function carregarTarefas() {
             return [];
         }
 
-        return tarefasCarregadas;
+        const tarefasValidas = tarefasCarregadas.filter(ehTarefaValida);
+        if (tarefasValidas.length !== tarefasCarregadas.length) {
+            console.warn("Algumas tarefas salvas estavam corrompidas e foram descartadas.");
+        }
+
+        return tarefasValidas;
     } catch (erro) {
         // JSON.parse falhou: o conteúdo salvo não é um JSON válido.
         console.warn("Não foi possível carregar as tarefas salvas. Iniciando lista vazia.", erro);
@@ -57,6 +80,7 @@ const elementoCampoPrioridade = document.querySelector("#campo-prioridade");
 const elementoCampoData = document.querySelector("#campo-data");
 const elementoBotaoSalvar = document.querySelector("#botao-salvar");
 const elementoBotaoCancelar = document.querySelector("#botao-cancelar");
+const elementoBotaoApagarTodas = document.querySelector("#botao-apagar-todas");
 const elementoLista = document.querySelector("#lista-tarefas");
 const elementoMensagemVazia = document.querySelector("#mensagem-vazia");
 const elementoContador = document.querySelector("#contador-tarefas");
@@ -216,6 +240,25 @@ function excluirTarefa(id) {
     if (idEmEdicao === id) sairDoModoEdicao();
     atualizarAplicacao();
 }
+
+// Desafio: apaga TODAS as tarefas de uma vez (storage + tela).
+// Não faz nada se a lista já estiver vazia, para evitar um confirm()
+// desnecessário. Se a tarefa em edição for apagada junto, sai do modo
+// edição para não deixar o formulário "preso" numa tarefa que não existe mais.
+function apagarTodasTarefas() {
+    if (tarefas.length === 0) return;
+
+    const confirmou = window.confirm(
+        `Tem certeza que deseja apagar todas as ${tarefas.length} tarefa(s)? Essa ação não pode ser desfeita.`
+    );
+    if (!confirmou) return;
+
+    tarefas = [];
+    sairDoModoEdicao();
+    atualizarAplicacao();
+}
+
+elementoBotaoApagarTodas.addEventListener("click", apagarTodasTarefas);
 
 // Delegação de eventos: um único listener no container cuida de todos os
 // botões de ação, inclusive os que ainda serão recriados em futuras renderizações.

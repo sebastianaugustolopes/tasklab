@@ -110,6 +110,20 @@ button {
     border: 1px solid var(--cor-borda);
 }
 
+.acoes-lista {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+#botao-apagar-todas {
+    background-color: transparent;
+    color: var(--cor-perigo);
+    border: 1px solid var(--cor-perigo);
+    padding: 6px 10px;
+    font-size: 0.875rem;
+}
+
 #lista-tarefas {
     list-style: none;
     padding: 0;
